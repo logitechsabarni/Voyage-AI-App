@@ -1,0 +1,61 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Custom VoyageAI Sophisticated Dark premium colors */
+  --color-brand-primary: #0a0a0c; /* Deep Charcoal Dark */
+  --color-brand-accent: #d4af37;  /* Rich Gold Accent */
+  --color-brand-secondary: #8e7330; /* Medium Muted Gold */
+}
+
+/* Base custom classes to support Sophisticated Dark across any Tailwind utility markup */
+.glass-panel {
+  background: rgba(26, 26, 30, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+}
+
+.timeline-node {
+  position: relative;
+  padding-left: 24px;
+  border-left: 1px solid rgba(212, 175, 55, 0.3);
+  padding-bottom: 20px;
+}
+
+.timeline-node::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 4px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #d4af37;
+  box-shadow: 0 0 8px #d4af37;
+}
+
+/* Custom progress animation */
+@keyframes progressAnim {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-progress {
+  animation: progressAnim 2.5s infinite linear;
+}
+
+/* Scrollbar customizations for sleek dark dashboard aesthetics */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
