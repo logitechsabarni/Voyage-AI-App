@@ -37,7 +37,7 @@ async function startServer() {
       // Trigger parallel asynchronous generators for high speed execution
       const [itineraryPlan, weatherReport] = await Promise.all([
         generateTripPlan(tripParams),
-        Promise.resolve(getDestinationWeather(tripParams.destinationCity, tripParams.destinationCountry, tripParams.duration, tripParams.startDate))
+        getDestinationWeather(tripParams.destinationCity, tripParams.destinationCountry, tripParams.duration, tripParams.startDate)
       ]);
 
       // Calculate localized matches & scores algorithmically
@@ -58,19 +58,23 @@ async function startServer() {
   });
 
   // API Route: Separate Weather service just in case
-  app.get('/api/weather', (req, res) => {
+  app.get('/api/weather', async (req, res) => {
     const { city, country, duration, startDate } = req.query;
     if (!city || !startDate) {
        res.status(400).json({ error: 'Missing city or startDate parameter' });
        return;
     }
-    const weather = getDestinationWeather(
-       String(city),
-       String(country || ''),
-       Number(duration || 5),
-       String(startDate)
-    );
-    res.json(weather);
+    try {
+      const weather = await getDestinationWeather(
+         String(city),
+         String(country || ''),
+         Number(duration || 5),
+         String(startDate)
+      );
+      res.json(weather);
+    } catch (err) {
+      res.status(500).json({ error: 'Failed to retrieve weather reports' });
+    }
   });
 
   // API Route: Intelligent Chat Assistant
