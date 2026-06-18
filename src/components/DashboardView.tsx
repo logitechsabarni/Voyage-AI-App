@@ -17,7 +17,7 @@ interface DashboardViewProps {
 }
 
 export default function DashboardView({ plan, weather, recommendations, tripRequest, onBack }: DashboardViewProps) {
-  const [activeTab, setActiveTab] = useState<'itinerary' | 'comparison' | 'marketplace' | 'discover' | 'analytics' | 'chat'>('itinerary');
+  const [activeTab, setActiveTab] = useState<'itinerary' | 'comparison' | 'marketplace' | 'foodsightseeing' | 'discover' | 'analytics' | 'chat'>('itinerary');
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [selectedFlight, setSelectedFlight] = useState<string>('best');
   const [selectedHotel, setSelectedHotel] = useState<string>('luxury');
@@ -40,6 +40,278 @@ export default function DashboardView({ plan, weather, recommendations, tripRequ
       raw = parseFloat(cleaned) || 200;
     }
     return Math.round(raw * currencyRate).toLocaleString();
+  };
+
+  // Real client-side Ticket & Voucher PDF downloader function
+  const handleDownloadTickets = () => {
+    const flightInfo = flightsList.find(f => f.tier === selectedFlight) || flightsList[0];
+    const hotelInfo = hotelsList.find(h => h.tier === selectedHotel) || hotelsList[0];
+    const ticketHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>VoyageAI X Ultra - E-Ticket Vouchers</title>
+        <style>
+          body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0d0d11;
+            color: #f3f4f6;
+            padding: 40px 20px;
+            margin: 0;
+          }
+          .ticket-container {
+            max-width: 750px;
+            margin: 0 auto;
+            background: #111114;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            overflow: hidden;
+            border: 2px solid #d4af37;
+          }
+          .header {
+            background: linear-gradient(135deg, #111114, #1a1a24);
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #27272a;
+            position: relative;
+          }
+          .header::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #d4af37, transparent);
+          }
+          .logo-text {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            color: #ffffff;
+            margin: 0;
+          }
+          .logo-text span {
+            color: #d4af37;
+          }
+          .pnr {
+            font-family: monospace;
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            color: #d4af37;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 13px;
+            letter-spacing: 1px;
+          }
+          .content {
+            padding: 35px;
+          }
+          .section {
+            margin-bottom: 30px;
+            border-bottom: 1px solid #27272a;
+            padding-bottom: 25px;
+          }
+          .section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+          }
+          .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: #d4af37;
+            letter-spacing: 2px;
+            margin-bottom: 18px;
+          }
+          .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+          }
+          .item label {
+            font-size: 10px;
+            color: #a1a1aa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: block;
+            margin-bottom: 5px;
+          }
+          .item .val {
+            font-size: 14px;
+            font-weight: 700;
+            color: #ffffff;
+          }
+          .badge {
+            background: rgba(16, 185, 129, 0.1);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: bold;
+            display: inline-block;
+          }
+          .barcode-box {
+            text-align: center;
+            padding: 25px;
+            background: #0a0a0c;
+            border-top: 1px solid #27272a;
+          }
+          .barcode {
+            height: 55px;
+            background: repeating-linear-gradient(90deg, #ffffff, #ffffff 2px, transparent 2px, transparent 8px);
+            margin: 15px auto;
+            max-width: 320px;
+            opacity: 0.85;
+          }
+          .instructions {
+            font-size: 11px;
+            color: #71717a;
+            text-align: center;
+            margin-top: 35px;
+            line-height: 1.6;
+          }
+          @media print {
+            body { background: #ffffff; color: #000000; padding: 0; }
+            .ticket-container { box-shadow: none; border: 1px solid #000; background: #ffffff; color: #000000; }
+            .item .val { color: #000000; }
+            .barcode { background: repeating-linear-gradient(90deg, #000, #000 2px, transparent 2px, transparent 8px); }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="ticket-container">
+          <div class="header">
+            <div>
+              <h1 class="logo-text">VOYAGE<span>AI</span> ULTRA</h1>
+              <span style="font-size: 9px; color: #71717a; letter-spacing: 1px; font-weight: bold; text-transform: uppercase;">
+                Integrated Pass Holders & Stay Vouchers
+              </span>
+            </div>
+            <div class="pnr">PNR: ${bookingVouchers.flights.pnr}</div>
+          </div>
+          
+          <div class="content">
+            <div class="section">
+              <div class="section-title">Passenger Details & Travel Ledger</div>
+              <div class="grid">
+                <div class="item">
+                  <label>Consignee Guest</label>
+                  <div class="val">${tripRequest?.passengerEmail || 'sabarni.guha15@gmail.com'}</div>
+                </div>
+                <div class="item">
+                  <label>Target Destination</label>
+                  <div class="val">${tripRequest?.destinationCity || 'Goa'}, ${tripRequest?.destinationCountry || 'India'}</div>
+                </div>
+                <div class="item">
+                  <label>Scheduled Departure</label>
+                  <div class="val">${tripRequest?.startDate || '2026-11-20'}</div>
+                </div>
+                <div class="item">
+                  <label>Voyage Duration</label>
+                  <div class="val">${tripRequest?.duration || 5} Days</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Flight Outbound Booking Info</div>
+              <div class="grid">
+                <div class="item">
+                  <label>Carriage Operator</label>
+                  <div class="val">${flightInfo.airline} (${flightInfo.tier.toUpperCase()} TIER)</div>
+                </div>
+                <div class="item">
+                  <label>Fly Timings / Duration</label>
+                  <div class="val">${flightInfo.departure} &#10142; ${flightInfo.arrival} (${flightInfo.duration})</div>
+                </div>
+                <div class="item">
+                  <label>Stops & In-Cabin Tier</label>
+                  <div class="val">${flightInfo.stops === 0 ? 'Direct Non-Stop' : flightInfo.stops + ' Stopover'} | Standard Hold</div>
+                </div>
+                <div class="item">
+                  <label>Allocation Status</label>
+                  <div><span class="badge">SECURED & HOLD VERIFIED</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Stay & Accompaniment Allocation</div>
+              <div class="grid">
+                <div class="item">
+                  <label>Pre-Booked Resort</label>
+                  <div class="val">${hotelInfo.name}</div>
+                </div>
+                <div class="item">
+                  <label>Neighborhood Quarter</label>
+                  <div class="val">${hotelInfo.area}</div>
+                </div>
+                <div class="item">
+                  <label>Hotel Voucher ID</label>
+                  <div class="val">${bookingVouchers.hotels.code}</div>
+                </div>
+                <div class="item">
+                  <label>Accompaniment Offer</label>
+                  <div class="val">En-Suite Superior King bed allocations with morning meals</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <div class="section-title">Aggregated Bill Valuation</div>
+              <div class="grid">
+                <div class="item">
+                  <label>Total Price Paid (${activeCurrency})</label>
+                  <div class="val" style="color: #d4af37; font-size: 18px;">${currencySymbol}${formatCostValue(plan.budget_estimate.total || 1450)}</div>
+                </div>
+                <div class="item">
+                  <label>Stays Ledger</label>
+                  <div class="val">${currencySymbol}${formatCostValue(plan.budget_estimate.stay || 450)}</div>
+                </div>
+                <div class="item">
+                  <label>Flights Carriage</label>
+                  <div class="val">${currencySymbol}${formatCostValue(flightInfo.price)}</div>
+                </div>
+                <div class="item">
+                  <label>Transit Shuttles</label>
+                  <div class="val">${currencySymbol}${formatCostValue(plan.budget_estimate.transport || 120)}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="barcode-box">
+            <div class="barcode"></div>
+            <span style="font-family: monospace; font-size: 10px; color: #a1a1aa; letter-spacing: 2px;">
+              *VAI-U-${bookingVouchers.flights.pnr}-${bookingVouchers.hotels.code}*
+            </span>
+          </div>
+        </div>
+        
+        <p class="instructions">
+          This is a simulated secure PDF boarding document bundle compiled by VoyageAI. <br/>
+          To convert this into a standard paper copy or physical PDF file, open it in any web browser and press 'Ctrl+P' (Windows) or 'Cmd+P' (Mac).
+        </p>
+      </body>
+      </html>
+    `;
+
+    const blob = new Blob([ticketHtml], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `VoyageAI_BoardingPass_${bookingVouchers.flights.pnr}.html`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   // Document checklists state
@@ -251,6 +523,7 @@ export default function DashboardView({ plan, weather, recommendations, tripRequ
           { id: 'itinerary', label: 'Travel OS Hub', icon: Calendar },
           { id: 'comparison', label: 'AI Sibling Comparison', icon: Landmark },
           { id: 'marketplace', label: 'AI Travel Marketplace', icon: Plane },
+          { id: 'foodsightseeing', label: 'Food & Sightseeing Curator', icon: Utensils },
           { id: 'discover', label: 'Local Discovery & Gems', icon: MapPin },
           { id: 'analytics', label: 'Plotly Analytics Room', icon: BarChart4 },
           { id: 'chat', label: 'AI Copilot Chat', icon: MessageSquare }
@@ -304,27 +577,27 @@ export default function DashboardView({ plan, weather, recommendations, tripRequ
                 </div>
 
                 {/* Total amount display with dynamic multi-currency converter */}
-                <div className="p-4 bg-zinc-950 rounded-2xl border border-white/5 space-y-3">
-                  <div className="flex justify-between items-center gap-2">
-                    <span className="text-[11px] font-medium text-zinc-400">Total Price ({activeCurrency}):</span>
-                    <span className="text-3xl font-black font-mono text-white tracking-tight flex items-center gap-0.5">
+                <div className="p-4 bg-zinc-950 rounded-2xl border border-white/5 space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/5 pb-2">
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-400">Total Price ({activeCurrency}):</span>
+                    <span className="text-xl sm:text-2xl lg:text-3xl font-black font-mono text-[#d4af37] tracking-tight break-all">
                       {currencySymbol}{formatCostValue(plan.budget_estimate.total || 1450)}
                     </span>
                   </div>
                   
-                  {/* Small sub-breakdown bar */}
-                  <div className="pt-2 border-t border-white/5 grid grid-cols-3 gap-2 text-center text-[10px]">
-                    <div className="bg-zinc-900/40 p-2 rounded-xl border border-white/5">
-                      <span className="text-[8px] text-zinc-500 block uppercase font-mono tracking-wider mb-0.5">Stays</span>
-                      <span className="font-bold text-zinc-200 font-mono">{currencySymbol}{formatCostValue(plan.budget_estimate.stay || 450)}</span>
+                  {/* Small sub-breakdown bar - fully responsive grid to prevent number squeezing */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-left sm:text-center text-[10px]">
+                    <div className="bg-zinc-900/40 p-2 rounded-xl border border-white/5 flex sm:flex-col justify-between items-center sm:justify-center gap-1">
+                      <span className="text-[8px] text-zinc-500 block uppercase font-mono tracking-wider">Stays</span>
+                      <span className="font-bold text-zinc-200 font-mono text-xs">{currencySymbol}{formatCostValue(plan.budget_estimate.stay || 450)}</span>
                     </div>
-                    <div className="bg-zinc-900/40 p-2 rounded-xl border border-white/5">
-                      <span className="text-[8px] text-zinc-500 block uppercase font-mono tracking-wider mb-0.5">Flights</span>
-                      <span className="font-bold text-zinc-200 font-mono">{currencySymbol}{formatCostValue((flightsList[0]?.price || 320) + (flightsList[1]?.price || 400) / 2)}</span>
+                    <div className="bg-zinc-900/40 p-2 rounded-xl border border-white/5 flex sm:flex-col justify-between items-center sm:justify-center gap-1">
+                      <span className="text-[8px] text-zinc-500 block uppercase font-mono tracking-wider">Flights</span>
+                      <span className="font-bold text-zinc-200 font-mono text-xs">{currencySymbol}{formatCostValue((flightsList[0]?.price || 320) + (flightsList[1]?.price || 400) / 2)}</span>
                     </div>
-                    <div className="bg-zinc-900/40 p-2 rounded-xl border border-white/5">
-                      <span className="text-[8px] text-zinc-500 block uppercase font-mono tracking-wider mb-0.5">Transit</span>
-                      <span className="font-bold text-zinc-200 font-mono">{currencySymbol}{formatCostValue(plan.budget_estimate.transport || 120)}</span>
+                    <div className="bg-zinc-900/40 p-2 rounded-xl border border-white/5 flex sm:flex-col justify-between items-center sm:justify-center gap-1">
+                      <span className="text-[8px] text-zinc-500 block uppercase font-mono tracking-wider">Transit</span>
+                      <span className="font-bold text-zinc-200 font-mono text-xs">{currencySymbol}{formatCostValue(plan.budget_estimate.transport || 120)}</span>
                     </div>
                   </div>
                 </div>
@@ -342,9 +615,7 @@ export default function DashboardView({ plan, weather, recommendations, tripRequ
                         🎉 <strong className="font-bold">Voyage Secure Confirmation:</strong> Your live seat holds and central hotel allocations are active under simulated booking sequence ID <strong className="font-bold font-mono">P6Q-9921Y</strong>.
                       </div>
                       <button
-                        onClick={() => {
-                          alert(`DOWNLOAD METADATA: Unified boarding credentials and stay confirmation voucher pdf downloaded for ${tripRequest?.destinationCity || 'your destination'}.`);
-                        }}
+                        onClick={handleDownloadTickets}
                         className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10"
                       >
                         <ShieldCheck className="w-4 h-4" />
@@ -880,6 +1151,142 @@ export default function DashboardView({ plan, weather, recommendations, tripRequ
                   </div>
                 </div>
 
+              </div>
+
+            </div>
+          </div>
+        )}
+
+        {/* ==================== TAB: FOOD & SIGHTSEEING CURATOR ==================== */}
+        {activeTab === 'foodsightseeing' && (
+          <div className="space-y-8 animate-fade-in text-left">
+            <div className="bg-[#111114] border border-white/10 p-6 md:p-8 rounded-3xl shadow-2xl space-y-6">
+              
+              <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 border-b border-white/5 pb-6">
+                <div className="space-y-1">
+                  <span className="text-xs uppercase font-extrabold text-[#d4af37] tracking-wider block">Gourmet Cuisines & Sightseeing Spots</span>
+                  <h3 className="text-2xl font-black font-display text-white">Food & Sightseeing Curator</h3>
+                  <p className="text-xs text-zinc-400 max-w-xl">
+                    Discover gourmet dining spots, traditional local street eats, and iconic sightseeing viewpoints recommended specifically for your style index.
+                  </p>
+                </div>
+                
+                <div className="px-4 py-2 bg-zinc-950 border border-white/5 rounded-2xl flex items-center gap-3">
+                  <Utensils className="w-4 h-4 text-[#d4af37]" />
+                  <span className="text-[11px] font-mono font-bold text-zinc-350">Estimated Daily Dining budget: <strong className="text-white">{currencySymbol}{formatCostValue(plan.budget_estimate.food || 50)} / day</strong></span>
+                </div>
+              </div>
+
+              {/* Two Column Layout: Food vs Landmarks */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                {/* COLUMN 1: GASTRONOMICAL FOOD GUIDE */}
+                <div className="space-y-5">
+                  <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                    <Utensils className="w-5 h-5 text-[#d4af37]" />
+                    <h4 className="font-extrabold text-white text-base font-display uppercase tracking-tight">Culinaries & Gourmet Spots</h4>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* Interactive specialty container */}
+                    <div className="p-5 bg-gradient-to-r from-zinc-950 to-zinc-900 border border-white/5 rounded-2xl space-y-3">
+                      <span className="text-[9px] bg-[#d4af37]/10 text-[#d4af37] border border-[#d4af37]/20 px-2.5 py-0.5 rounded font-bold uppercase font-mono">Famous Regional Cuisines</span>
+                      <p className="text-xs text-zinc-300 font-light leading-relaxed">
+                        Indulge in traditional delicacies meticulously aligned with local food heritage. We highly recommend tasting these handcrafted specialities:
+                      </p>
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {(experiencePack.street_food || ['Slow Cooked Spiced Stew', 'Oven Roasted Herb Flatbread', 'Signature Sweet Coconut Crepes']).map((item: string, idx: number) => (
+                          <span key={idx} className="bg-zinc-900 border border-white/10 text-white font-mono text-[10px] px-3 py-1 rounded-xl">
+                            🍲 {item}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Highly Recommended Local Restaurants list */}
+                    {[
+                      { name: 'Saffron Heritage Restaurant', type: 'Fine Dining Cuisines', desc: 'Indulge in beautiful architectural masonry while sampling signature slow-baked dishes and saffron mocktails.', cost: 45, rating: '4.8 ⭐' },
+                      { name: 'The Artisanal Brew & Bake', type: 'Specialty Bistro Cafe', desc: 'Hidden rooftop botanical garden sanctuary offering signature pour-over coffees and warm pistachio rolls.', cost: 18, rating: '4.7 ⭐' },
+                      { name: 'Coastal Waterside Grills', type: 'Local Sea Harvest', desc: 'Beautiful waterfront boardwalk tables serving fresh lemon pepper catches with traditional coriander dips.', cost: 30, rating: '4.9 ⭐' }
+                    ].map((cafe, i) => (
+                      <div key={i} className="p-4 rounded-2xl bg-zinc-950/40 border border-white/5 hover:border-[#d4af37]/30 transition-colors flex justify-between items-start gap-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <h5 className="font-bold text-white text-xs sm:text-sm font-display">{cafe.name}</h5>
+                            <span className="text-[9.5px] font-mono text-zinc-500">({cafe.type})</span>
+                          </div>
+                          <p className="text-xs text-zinc-400 font-light leading-relaxed">{cafe.desc}</p>
+                          <div className="flex items-center gap-3 pt-1 text-[10.5px]">
+                            <span className="text-[#d4af37] font-bold">{cafe.rating}</span>
+                            <span className="text-zinc-500">|</span>
+                            <span className="text-zinc-300 font-mono">Avg cost: {currencySymbol}{formatCostValue(cafe.cost)} / person</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* COLUMN 2: ICONIC SIGHTSEEINGS & LANDMARKS */}
+                <div className="space-y-5">
+                  <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+                    <MapPin className="w-5 h-5 text-[#d4af37]" />
+                    <h4 className="font-extrabold text-white text-base font-display uppercase tracking-tight">Sightseeing & Viewpoints</h4>
+                  </div>
+
+                  <div className="space-y-4">
+                    {/* Photography Spots container */}
+                    <div className="p-5 bg-gradient-to-r from-zinc-950 to-zinc-900 border border-white/5 rounded-2xl space-y-2">
+                      <span className="text-[9px] bg-sky-500/10 text-sky-400 border border-sky-500/20 px-2.5 py-0.5 rounded font-bold uppercase font-mono flex items-center gap-1.5 self-start w-fit">
+                        📸 High Definition Outlooks
+                      </span>
+                      <p className="text-xs text-zinc-300 font-light leading-relaxed">
+                        To capture breathtaking scenic horizons and beautiful golden light, secure visits around these top photography coords:
+                      </p>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        <div className="p-2 bg-zinc-900/50 rounded-xl border border-white/5 text-[11px]">
+                          <strong className="text-white block font-display">Sunrise Outlook:</strong>
+                          <span className="text-zinc-400 font-light">{experiencePack.sunrise_spots?.[0] || 'Ancient cliff citadel overlooking the bay'}</span>
+                        </div>
+                        <div className="p-2 bg-zinc-900/50 rounded-xl border border-white/5 text-[11px]">
+                          <strong className="text-white block font-display">Sunset Outlook:</strong>
+                          <span className="text-zinc-400 font-light">{experiencePack.sunset_spots?.[0] || 'Rooftop botanical terrace balcony'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sightseeing hotspots cards */}
+                    {recommendations.slice(0, 3).map((spot, i) => (
+                      <div key={i} className="p-4 rounded-2xl bg-zinc-950/40 border border-white/5 hover:border-[#d4af37]/30 transition-colors flex justify-between items-start gap-4">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <h5 className="font-bold text-white text-xs sm:text-sm font-display">{spot.place}</h5>
+                            <span className="px-2 py-0.5 bg-zinc-900 text-zinc-400 rounded text-[8px] font-bold uppercase font-mono tracking-wider">{spot.category}</span>
+                          </div>
+                          <p className="text-xs text-zinc-400 font-light leading-relaxed">{spot.reason}</p>
+                          <div className="flex flex-wrap items-center gap-3 pt-1 text-[10.5px]">
+                            <span className="text-emerald-400 font-bold font-mono">Recommend Index: {spot.score}%</span>
+                            <span className="text-zinc-500">|</span>
+                            <span className="text-zinc-300 font-mono">Suggested Hour: Morning 08:30 AM (avoid crowds)</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+              
+              {/* Extra traveling tip footer */}
+              <div className="p-4 rounded-2xl bg-zinc-950 border border-white/5 text-xs text-zinc-400 flex gap-3 items-start leading-relaxed">
+                <Lightbulb className="w-5 h-5 text-[#d4af37] shrink-0 mt-0.5" />
+                <div className="space-y-0.5">
+                  <strong className="text-white uppercase text-[10px] tracking-wider block">Insiders Secret Strategy</strong>
+                  <p className="font-light">
+                    Sightseeing permits are 35% cheaper when requested online via local government apps. Always keep some light physical cash in local format ({activeCurrency}) to handle minor gratuities at artisanal street stalls comfortably.
+                  </p>
+                </div>
               </div>
 
             </div>
