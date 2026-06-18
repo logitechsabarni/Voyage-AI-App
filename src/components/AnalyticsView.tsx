@@ -1,6 +1,8 @@
 import { BudgetEstimate, RecommendationScore } from '../types';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
-import { Award, DollarSign, ListCollapse, TrendingUp } from 'lucide-react';
+import { Award, DollarSign, ListCollapse, TrendingUp, Compass } from 'lucide-react';
+// @ts-ignore
+import bannerImage from '../assets/images/travel_dashboard_banner_1781807430306.jpg';
 
 interface AnalyticsViewProps {
   budget: BudgetEstimate;
@@ -46,6 +48,30 @@ export default function AnalyticsView({ budget, recommendations }: AnalyticsView
   return (
     <div className="space-y-12">
       
+      {/* Premium High-End Visual Banner Card */}
+      <div className="w-full bg-[#111114] border border-[#d4af37]/20 rounded-3xl overflow-hidden relative group shadow-2xl">
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-[#0a0a0c]/90 via-[#0a0a0c]/40 to-transparent z-10" />
+        <img 
+          src={bannerImage} 
+          alt="Voyage Dynamic Signature Map" 
+          referrerPolicy="no-referrer"
+          className="w-full h-48 md:h-64 object-cover opacity-80 group-hover:scale-[1.02] transition-transform duration-700 ease-out" 
+        />
+        <div className="absolute bottom-0 left-0 w-full p-6 md:p-8 z-20 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+          <div className="space-y-1">
+            <span className="text-[10px] uppercase font-mono font-bold tracking-widest text-[#d4af37] block">Signature Art & Cartography</span>
+            <h3 className="text-xl md:text-2xl font-black text-white font-display uppercase tracking-tight">Algorithmic Travel Metrics Matrix</h3>
+            <p className="text-xs text-zinc-350 font-light max-w-xl">
+              Visualizing matching indices, carbon transport offsets, and localized financial allocation weights curated specifically for your profile.
+            </p>
+          </div>
+          <div className="shrink-0 flex items-center gap-2 px-3 py-1.5 bg-[#d4af37]/10 border border-[#d4af37]/35 rounded-xl">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#d4af37] animate-pulse" />
+            <span className="text-[10px] font-mono font-extrabold uppercase tracking-wider text-[#d4af37]">Voyage Analytics Panel</span>
+          </div>
+        </div>
+      </div>
+
       {/* Upper overview bento statistics */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         
@@ -103,8 +129,8 @@ export default function AnalyticsView({ budget, recommendations }: AnalyticsView
                     data={budgetData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={85}
+                    innerRadius={70}
+                    outerRadius={95}
                     paddingAngle={5}
                     dataKey="value"
                   >
@@ -119,10 +145,23 @@ export default function AnalyticsView({ budget, recommendations }: AnalyticsView
               <div className="text-xs text-zinc-500">Loading projection indexes...</div>
             )}
             
-            {/* Display overall total inside concentric center donut style */}
+            {/* Display Compass graphic in center of donut instead of text so it doesn't overlap/destroy chart image */}
             <div className="absolute flex flex-col justify-center items-center text-center pointer-events-none">
-              <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Estimated Outlay</span>
-              <span className="text-xl font-extrabold text-[#d4af37] font-display">${totalCalculated}</span>
+              <Compass className="w-8 h-8 text-[#d4af37]/65 animate-spin-slow" />
+            </div>
+          </div>
+
+          {/* Clean outlay total displayed clearly below the pie chart, not overlapping on the image */}
+          <div className="p-4 bg-zinc-950 rounded-2xl border border-white/5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+            <div>
+              <span className="text-[10px] uppercase font-mono font-bold tracking-widest text-zinc-500 block">Consolidated Outlay</span>
+              <p className="text-[11px] text-zinc-400 font-light">Calculated total baseline stay, transport, entry tickets & dining</p>
+            </div>
+            <div className="text-left sm:text-right shrink-0">
+              <span className="text-2xl font-black font-mono text-[#d4af37] tracking-tight">
+                ${totalCalculated ? totalCalculated.toLocaleString() : budget.total}
+              </span>
+              <span className="text-[9px] text-[#34d399] font-mono block">All taxes & duties factored</span>
             </div>
           </div>
 

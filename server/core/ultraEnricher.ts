@@ -1,11 +1,98 @@
 import { TripPlan, TripRequest, SmartFlight, HotelOption, LocalExperiencePack, SafetyScoreDetails, BookingReservations, DestinationComparison, CompanionScore } from '../../src/types';
 
 /**
+ * Dynamic realistic cost-of-living multiplier based on country and city
+ */
+function getCostMultiplier(city: string, country: string): number {
+  const cnt = (country || '').toLowerCase();
+  const cty = (city || '').toLowerCase();
+  
+  // Tier 5: Extremely High Cost (Switzerland, Iceland, Norway, Zurich, Geneva, Reykjavik, Monaco, NY, Singapore, etc.)
+  if (
+    cnt.includes('switzerland') || 
+    cnt.includes('iceland') || 
+    cnt.includes('norway') || 
+    cnt.includes('denmark') || 
+    cnt.includes('monaco') || 
+    cty.includes('zurich') || 
+    cty.includes('geneva') || 
+    cty.includes('reykjavik') || 
+    cty.includes('oslo') || 
+    cty.includes('copenhagen') ||
+    cty.includes('new york') ||
+    cty.includes('singapore')
+  ) {
+    return 2.4;
+  }
+  // Tier 4: High Cost (Japan, France, UK, Germany, USA, Italy, UAE, Paris, Tokyo, Kyoto, London, Dubai, Berlin)
+  if (
+    cnt.includes('japan') || 
+    cnt.includes('france') || 
+    cnt.includes('united kingdom') || 
+    cnt.includes('uk') || 
+    cnt.includes('germany') || 
+    cnt.includes('united states') || 
+    cnt.includes('usa') || 
+    cnt.includes('italy') || 
+    cnt.includes('united arab emirates') || 
+    cnt.includes('uae') || 
+    cnt.includes('australia') ||
+    cnt.includes('canada') ||
+    cnt.includes('sweden') ||
+    cty.includes('tokyo') || 
+    cty.includes('kyoto') || 
+    cty.includes('osaka') || 
+    cty.includes('paris') || 
+    cty.includes('lyon') || 
+    cty.includes('london') || 
+    cty.includes('dubai') || 
+    cty.includes('berlin') || 
+    cty.includes('rome') ||
+    cty.includes('venice') ||
+    cty.includes('tuscany') ||
+    cty.includes('sydney') ||
+    cty.includes('melbourne') ||
+    cty.includes('vancouver') ||
+    cty.includes('toronto')
+  ) {
+    return 1.6;
+  }
+  // Tier 2: Budget-friendly (India, Vietnam, Thailand, Bali, Morocco, Indonesia, Peru)
+  if (
+    cnt.includes('india') || 
+    cnt.includes('vietnam') || 
+    cnt.includes('thailand') || 
+    cnt.includes('indonesia') || 
+    cnt.includes('morocco') || 
+    cnt.includes('peru') || 
+    cnt.includes('nepal') || 
+    cnt.includes('cambodia') || 
+    cnt.includes('laos') || 
+    cty.includes('goa') || 
+    cty.includes('bali') || 
+    cty.includes('darjeeling') || 
+    cty.includes('gangtok') || 
+    cty.includes('coorg') || 
+    cty.includes('munnar') || 
+    cty.includes('shillong') || 
+    cty.includes('kolkata') || 
+    cty.includes('mumbai') || 
+    cty.includes('delhi') || 
+    cnt.includes('kerala') || 
+    cnt.includes('rajasthan')
+  ) {
+    return 0.55;
+  }
+  return 1.0;
+}
+
+/**
  * Generates an ultra-realistic flight search response
  */
 export function getSimulatedFlights(req: TripRequest): SmartFlight[] {
   const code = req.destinationCity.substring(0, 3).toUpperCase();
   const originCode = req.originCity.substring(0, 3).toUpperCase();
+  const mult = getCostMultiplier(req.destinationCity, req.destinationCountry);
   
   // Decide active airlines based on countries
   const isIndia = req.originCountry.toLowerCase().includes('india') || req.destinationCountry.toLowerCase().includes('india');
@@ -21,7 +108,7 @@ export function getSimulatedFlights(req: TripRequest): SmartFlight[] {
     stops: 1,
     departure: '06:15 AM',
     arrival: '02:35 PM',
-    price: req.budget === 'economy' ? 240 : req.budget === 'moderate' ? 420 : 680,
+    price: Math.round((req.budget === 'economy' ? 240 : req.budget === 'moderate' ? 420 : 680) * mult),
     tier: 'cheapest'
   });
 
@@ -32,7 +119,7 @@ export function getSimulatedFlights(req: TripRequest): SmartFlight[] {
     stops: 0,
     departure: '10:30 AM',
     arrival: '04:40 PM',
-    price: req.budget === 'economy' ? 380 : req.budget === 'moderate' ? 620 : 1200,
+    price: Math.round((req.budget === 'economy' ? 380 : req.budget === 'moderate' ? 620 : 1200) * mult),
     tier: 'best'
   });
 
@@ -43,7 +130,7 @@ export function getSimulatedFlights(req: TripRequest): SmartFlight[] {
     stops: 0,
     departure: '12:45 PM',
     arrival: '06:30 PM',
-    price: req.budget === 'economy' ? 450 : req.budget === 'moderate' ? 710 : 1450,
+    price: Math.round((req.budget === 'economy' ? 450 : req.budget === 'moderate' ? 710 : 1450) * mult),
     tier: 'fastest'
   });
 
@@ -54,7 +141,7 @@ export function getSimulatedFlights(req: TripRequest): SmartFlight[] {
     stops: 1,
     departure: '09:00 PM',
     arrival: '04:15 AM (+1)',
-    price: req.budget === 'economy' ? 310 : req.budget === 'moderate' ? 530 : 920,
+    price: Math.round((req.budget === 'economy' ? 310 : req.budget === 'moderate' ? 530 : 920) * mult),
     tier: 'value'
   });
 
@@ -67,12 +154,13 @@ export function getSimulatedFlights(req: TripRequest): SmartFlight[] {
 export function getSimulatedHotels(req: TripRequest): HotelOption[] {
   const city = req.destinationCity;
   const isIndia = req.destinationCountry.toLowerCase().includes('india');
+  const mult = getCostMultiplier(req.destinationCity, req.destinationCountry);
   
   return [
     {
       name: isIndia ? `The Taj Residency Palace, ${city}` : `Grand Regent Plaza & Spa, ${city}`,
       area: 'Downtown Culture Circle',
-      price: req.budget === 'luxury' ? 450 : req.budget === 'premium' ? 280 : 160,
+      price: Math.round((req.budget === 'luxury' ? 450 : req.budget === 'premium' ? 280 : 160) * mult),
       rating: 4.8,
       reason: 'Ultimate luxury with high panoramic gardens and immediate transport access.',
       tier: 'luxury'
@@ -80,7 +168,7 @@ export function getSimulatedHotels(req: TripRequest): HotelOption[] {
     {
       name: isIndia ? `Zostel Premium Boutique Hub, ${city}` : `Citadines Urban Suites, ${city}`,
       area: 'Trendsetter Art District',
-      price: req.budget === 'luxury' ? 220 : req.budget === 'premium' ? 140 : 85,
+      price: Math.round((req.budget === 'luxury' ? 220 : req.budget === 'premium' ? 140 : 85) * mult),
       rating: 4.5,
       reason: 'Bustling artsy atmosphere paired with great single-origin visual café setups.',
       tier: 'premium'
@@ -88,7 +176,7 @@ export function getSimulatedHotels(req: TripRequest): HotelOption[] {
     {
       name: `City Heart Inn & Suites`,
       area: 'Historical Town Center',
-      price: req.budget === 'economy' ? 45 : 75,
+      price: Math.round((req.budget === 'economy' ? 45 : 75) * mult),
       rating: 4.2,
       reason: 'Highly walk-friendly with traditional breakfasts and high security.',
       tier: 'moderate'
@@ -96,7 +184,7 @@ export function getSimulatedHotels(req: TripRequest): HotelOption[] {
     {
       name: `Nomad Backpacker Pods`,
       area: 'Metro station lines',
-      price: req.budget === 'economy' ? 22 : 40,
+      price: Math.round((req.budget === 'economy' ? 22 : 40) * mult),
       rating: 4.0,
       reason: 'Clean smart capsule bedding, great workspace high-speed links.',
       tier: 'economy'

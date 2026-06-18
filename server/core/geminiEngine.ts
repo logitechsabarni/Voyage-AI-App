@@ -27,11 +27,11 @@ export async function generateTripPlan(req: TripRequest): Promise<TripPlan> {
   });
 
   const prompt = getTripPlanningPrompt(req);
-  const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-3.5-flash'];
+  const modelsToTry = ['gemini-3.5-flash', 'gemini-3.1-flash-lite'];
   let lastProblem: any = null;
 
   for (const modelName of modelsToTry) {
-    const maxAttempts = modelName === 'gemini-2.5-flash' ? 3 : 1;
+    const maxAttempts = modelName === 'gemini-3.5-flash' ? 3 : 1;
     let attempt = 0;
 
     while (attempt < maxAttempts) {
