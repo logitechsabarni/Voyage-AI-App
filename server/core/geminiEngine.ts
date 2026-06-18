@@ -2,6 +2,7 @@ import { GoogleGenAI } from '@google/genai';
 import { TripPlan, TripRequest } from '../../src/types';
 import { getTripPlanningPrompt } from './prompts';
 import { getFallbackTripPlan, validateAiResponse } from './validator';
+import { enrichPlan } from './ultraEnricher';
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -13,7 +14,7 @@ export async function generateTripPlan(req: TripRequest): Promise<TripPlan> {
 
   if (!apiKey || apiKey === 'MY_GEMINI_API_KEY' || apiKey.trim() === '') {
     console.warn('GEMINI_API_KEY is not defined or is a placeholder. Defaulting to safe offline planner.');
-    return getFallbackTripPlan(req);
+    return enrichPlan(getFallbackTripPlan(req), req);
   }
 
   const ai = new GoogleGenAI({
@@ -26,11 +27,11 @@ export async function generateTripPlan(req: TripRequest): Promise<TripPlan> {
   });
 
   const prompt = getTripPlanningPrompt(req);
-  const modelsToTry = ['gemini-3.5-flash', 'gemini-flash-latest', 'gemini-3.1-flash-lite'];
+  const modelsToTry = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-3.5-flash'];
   let lastProblem: any = null;
 
   for (const modelName of modelsToTry) {
-    const maxAttempts = modelName === 'gemini-3.5-flash' ? 3 : 1;
+    const maxAttempts = modelName === 'gemini-2.5-flash' ? 3 : 1;
     let attempt = 0;
 
     while (attempt < maxAttempts) {
@@ -49,7 +50,7 @@ export async function generateTripPlan(req: TripRequest): Promise<TripPlan> {
         try {
           const validated = validateAiResponse(rawText, req);
           console.log(`[VoyageAI] Success: successfully received and validated plan from ${modelName}`);
-          return validated;
+          return enrichPlan(validated, req);
         } catch (validationErr) {
           console.warn(`[VoyageAI] Validation of raw response from ${modelName} was incomplete, checking again...`);
           throw validationErr;
@@ -81,5 +82,5 @@ export async function generateTripPlan(req: TripRequest): Promise<TripPlan> {
 
   console.warn('[VoyageAI] Gemini core engine initiated soft fallback due to temporary connection timeout');
   console.warn('[VoyageAI] VoyageAI Pro gracefully switched to intelligent offline mode');
-  return getFallbackTripPlan(req);
+  return enrichPlan(getFallbackTripPlan(req), req);
 }

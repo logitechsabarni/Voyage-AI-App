@@ -1,5 +1,5 @@
 /**
- * VoyageAI Pro - Unified TypeScript Type Definitions
+ * VoyageAI X Ultra - Unified TypeScript Type Definitions
  */
 
 export interface TripRequest {
@@ -16,6 +16,9 @@ export interface TripRequest {
   budget: 'economy' | 'moderate' | 'premium' | 'luxury';
   personality: 'Romantic escape' | 'Adventure expedition' | 'Cultural exploration' | 'Food journey' | 'Family vacation' | 'Digital nomad' | 'Business travel';
   interests: string[];
+  mood?: string;
+  currency?: 'INR' | 'USD' | 'EUR';
+  naturalQuery?: string;
 }
 
 export interface ActivitySlot {
@@ -31,6 +34,7 @@ export interface ItineraryDay {
   morning: ActivitySlot;
   afternoon: ActivitySlot;
   evening: ActivitySlot;
+  night?: ActivitySlot;
 }
 
 export interface RestaurantItem {
@@ -51,11 +55,22 @@ export interface StayRecommendation {
   budget_level: string;
 }
 
+export interface BudgetEstimateItem {
+  inr: number;
+  usd: number;
+  eur: number;
+}
+
 export interface BudgetEstimate {
   stay: number | string;
   food: number | string;
   transport: number | string;
   activities: number | string;
+  visa?: number | string;
+  insurance?: number | string;
+  shopping?: number | string;
+  emergency_fund?: number | string;
+  taxes?: number | string;
   total: number | string;
 }
 
@@ -64,6 +79,84 @@ export interface HiddenGem {
   description: string;
   location: string;
   tip: string;
+}
+
+export interface SmartFlight {
+  airline: string;
+  duration: string;
+  stops: number;
+  departure: string;
+  arrival: string;
+  price: number; // in base USD
+  tier: 'cheapest' | 'best' | 'fastest' | 'value';
+}
+
+export interface HotelOption {
+  name: string;
+  area: string;
+  price: number; // in base USD per night
+  rating: number;
+  reason: string;
+  tier: 'economy' | 'moderate' | 'premium' | 'luxury';
+}
+
+export interface LocalExperiencePack {
+  street_food: string[];
+  instagram_spots: string[];
+  sunrise_spots: string[];
+  sunset_spots: string[];
+}
+
+export interface SafetyScoreDetails {
+  safety: number;
+  budget: number;
+  weather: number;
+  ease: number;
+  crowd: number;
+  visa: number;
+  overall: number;
+}
+
+export interface BookingVoucher {
+  id: string;
+  pnr?: string;
+  code: string;
+  details: string;
+}
+
+export interface BookingReservations {
+  flights: BookingVoucher;
+  hotels: BookingVoucher;
+  transport: BookingVoucher;
+  activity: BookingVoucher;
+}
+
+export interface CompanionScore {
+  destination: string;
+  scores: {
+    budget: number;
+    weather: number;
+    crowd: number;
+    flight_cost: number;
+    food_cost: number;
+    safety: number;
+    visa: number;
+    attractions: number;
+    overall: number;
+  };
+  pros: string[];
+}
+
+export interface DestinationComparison {
+  winner: string;
+  runnerUp: string;
+  bestBudget: string;
+  bestLuxury: string;
+  bestFamily: string;
+  bestAdventure: string;
+  bestRomantic: string;
+  explanation: string;
+  options: CompanionScore[];
 }
 
 export interface TripPlan {
@@ -80,6 +173,15 @@ export interface TripPlan {
   budget_estimate: BudgetEstimate;
   travel_tips: string[];
   hidden_gems: HiddenGem[];
+  
+  // VoyageAI X Ultra additions
+  flights?: SmartFlight[];
+  hotels?: HotelOption[];
+  local_gems?: LocalExperiencePack;
+  safety_and_risk?: SafetyScoreDetails;
+  insights?: string[];
+  simulated_bookings?: BookingReservations;
+  comparison_engine?: DestinationComparison;
 }
 
 export interface WeatherDay {

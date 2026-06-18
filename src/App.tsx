@@ -21,6 +21,7 @@ export default function App() {
 
   // Storage for templates selections
   const [prefilledDestination, setPrefilledDestination] = useState<{ city: string; country: string } | undefined>(undefined);
+  const [activeRequest, setActiveRequest] = useState<TripRequest | null>(null);
 
   // Sequence loader messaging system for superior UX during generation
   const runVisualLoadingSteps = () => {
@@ -47,6 +48,7 @@ export default function App() {
   };
 
   const handleTripSubmission = async (request: TripRequest) => {
+    setActiveRequest(request);
     setIsLoading(true);
     setError(null);
     setLoadingStep('Initializing AI travel planning engine...');
@@ -259,6 +261,7 @@ export default function App() {
                   plan={tripData.plan}
                   weather={tripData.weather}
                   recommendations={tripData.recommendations}
+                  tripRequest={activeRequest}
                   onBack={handleBackToPlanner}
                 />
               </motion.div>
